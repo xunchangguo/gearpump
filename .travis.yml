@@ -45,6 +45,6 @@ deploy:
   file_glob: true
   file: output/target/gearpump-*.zip  
   on:
-    repo: gearpump/gearpump
+    repo: xunchangguo/gearpump
     tags: true
     all_branches: true
