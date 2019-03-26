@@ -19,32 +19,19 @@ script:
 - echo "TRAVIS_TAG" $TRAVIS_TAG
 - echo "repo" $TRAVIS_REPO_SLUG
 - set -o pipefail; set -e; skipLogs="Resolving |Compiling |Done updating|Updating |scoverage|coverage-report";
-  if [[ $TRAVIS_PULL_REQUEST != "false" || $TRAVIS_REPO_SLUG != "gearpump/gearpump" ]]; then 
-    sbt -jvm-opts project/travis/jvmopts clean +assembly scalastyle test:scalastyle unidoc coverage test | grep -v -E "$skipLogs";
-    sbt coverageReport;
-  elif [[ $TRAVIS_BRANCH == "master" ]]; then
-    sbt -jvm-opts project/travis/jvmopts clean +assembly +publish | grep -v -E "$skipLogs";
-    sbt -jvm-opts project/travis/jvmopts scalastyle test:scalastyle unidoc coverage test  | grep -v -E "$skipLogs";
-    sbt coverageReport;
-  elif [[ $TRAVIS_TAG != "" ]]; then
-    sbt -jvm-opts project/travis/jvmopts clean +assembly +packArchiveZip | grep -v -E "$skipLogs";
-  fi
+  sbt -jvm-opts project/travis/jvmopts clean +assembly +packArchiveZip | grep -v -E "$skipLogs";
 after_success:
-- if [[ $TRAVIS_PULL_REQUEST != "false" || $TRAVIS_REPO_SLUG != "gearpump/gearpump" || $TRAVIS_BRANCH == "master" ]]; then
-    bash <(curl -s https://codecov.io/bash);  
-  elif [[ $TRAVIS_TAG != "" ]]; then
-    set -o pipefail;
-    openssl aes-256-cbc -K $encrypted_3d8d53d5fdbf_key -iv $encrypted_3d8d53d5fdbf_iv -in secring.asc.enc -out secring.asc -d;
-    sbt +publishSigned sonatypeReleaseAll | grep -v -E "Resolving ";
-  fi 
+- ls output/target
 deploy:
   provider: releases
   skip_cleanup: true
   api_key:
     secure: "j18ZKxq3+a3fHNK6Xj4IaK/EyNPa8j2Pk2rOebZfUZFhfP4ICCrhZls+flCHhiUTN9SRzFgSbVrtjyVeIdSP9IyLjNArsSX4Lb6d0zobhrw7WiME+7s7gcYShvnomt2DNB8l9eCNR42mAaINUgPZHRd4ckb2M6MPZ+KRqX4e7viesLA+tWtoo+efB5H6SGC0EVxIJavSCjJJZpFWePBIrT5LpPoQ062NdQj2tEUfg2rcmvbeg5I8L1RGjWNOsFUTHKkFNtrRzt+Khs+6Z1EMV1/dBWIaSbf/qopukqEiKPaW8rH+jsujCRZsFZs5auP80L8+GaCaR5hMiRO/FuK7Be+As6D5Ig3u+XsGYMlDk/LtBIGtpNcfnLSDJKzGn/6Pscazx95D5yHlbhd9vYLIg8y/LwN/ATP/sFF4Bxq/eg9FYu2Pr+3kAh2la+4/84TTUEgqHN1fuCOf2Lm0Fv3viEtlxOByxJEnqLPNNrCOc3KxcYuRBv6+jfKcCoNJdDl34cD+KqsnoltlKzSHupWcAmbizgzaDKigvM894Bp3xu37UfZbCuyL3ks8maL7tD4pHz7ikjllDFlS49JSozWmxS496/YIcJnCvQKVKHlgMKBPebXYyp6HyKyyt999N6p/Blmz0iaHkg23gW+4gYTBLV2ZU/ql/dpYxkvnv0wiFg8="
   file_glob: true
-  file: output/target/gearpump-*.zip  
+  file: output/target/*.zip  
   on:
     repo: xunchangguo/gearpump
     tags: true
     all_branches: true
+addons:
+  ssh_known_hosts: github.com
